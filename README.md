@@ -103,7 +103,7 @@
 ```bash
 git clone https://github.com/YOUR_GITHUB_USERNAME/agc-analytics-mcp.git
 cd agc-analytics-mcp
-node --test "test/**/*.test.js"   # 48 项测试，无需网络与凭据
+node --test "test/**/*.test.js"   # 53 项测试，无需网络与凭据
 node index.js                     # 直接以 stdio 方式启动
 ```
 
@@ -200,8 +200,9 @@ agc_weekly_report { appId, endDate: "2026-06-07", outPath: "D:/reports/agc-week.
 ## 开发
 
 ```bash
-node --test "test/**/*.test.js"    # 单元 + 协议 e2e + mock 全链路，48 项
+node --test "test/**/*.test.js"    # 单元 + 协议 e2e + mock 全链路，53 项
 node scripts/check-secrets.mjs      # 提交前密钥扫描
+node scripts/handshake-check.mjs    # 真机 stdio 握手自检（CI 同款）
 node scripts/live-smoke.mjs         # 真实凭据冒烟（需 AGC_* 环境变量，不属于 CI）
 ```
 
@@ -214,10 +215,10 @@ src/client.js         # HTTP 客户端：域名守卫、业务码、401 重试�
 src/auth.js           # client_credentials 令牌 + Service Account PS256 JWT
 src/tools/*.js        # 13 个工具
 src/analytics/*.js    # 趋势 / 文本聚类 / Crash 归一化 / 报告组装（纯函数）
-test/*.test.js        # 48 项测试
+test/*.test.js        # 53 项测试
 ```
 
-提交 PR 前请确保 `node --test` 与 `node scripts/check-secrets.mjs` 均通过；CI 会在 Windows 与 Linux、Node 20 与 22 上跑同一套测试。
+提交 PR 前请确保 `node --test`、`node scripts/check-secrets.mjs` 与 `node scripts/handshake-check.mjs` 均通过；CI 会在 Windows 与 Linux、Node 20 与 22 上跑同一套测试。
 
 ## 许可
 

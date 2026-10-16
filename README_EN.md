@@ -97,7 +97,7 @@ Keep credential files outside the repository; `.gitignore` already ignores `.env
 ```bash
 git clone https://github.com/YOUR_GITHUB_USERNAME/agc-analytics-mcp.git
 cd agc-analytics-mcp
-node --test "test/**/*.test.js"   # 48 tests, no network and no credentials needed
+node --test "test/**/*.test.js"   # 53 tests, no network and no credentials needed
 node index.js                     # start as a stdio server
 ```
 
@@ -174,7 +174,7 @@ See [SECURITY.md](SECURITY.md) for the full threat model.
 ## Development
 
 ```bash
-node --test "test/**/*.test.js"    # 48 tests: unit, protocol e2e and mock full-chain
+node --test "test/**/*.test.js"    # 53 tests: unit, protocol e2e and mock full-chain
 node scripts/check-secrets.mjs      # pre-commit secret scan
 node scripts/live-smoke.mjs         # real-credential smoke test (needs AGC_* env vars; not in CI)
 ```

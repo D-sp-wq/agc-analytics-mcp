@@ -104,9 +104,8 @@ export class AuthProvider {
     let json = {}
     try { json = JSON.parse(text) } catch { /* handled below as a failure */ }
     if (!response.ok || typeof json.access_token !== 'string' || json.access_token === '') {
-      const ttl = Number(json.expires_in)
-      const ttlMs = Number.isFinite(ttl) && ttl > 0 ? ttl * 1000 : DEFAULT_TOKEN_TTL_MS
-      void ttlMs
+      // `text` is the upstream error body; it is redacted by the caller's
+      // error path and contains no credential we sent.
       throw new Error(`AGC token request failed (HTTP ${response.status}): ${text.slice(0, 300)}`)
     }
     const ttl = Number(json.expires_in)

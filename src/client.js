@@ -138,7 +138,7 @@ export class AgcClient {
     if (url.protocol !== 'https:' && !(url.protocol === 'http:' && loopbackMock)) {
       throw new AgcError(`refusing non-https report download: ${url.protocol}`)
     }
-    if (!loopbackMock && !isAgcHost(url.hostname) && !url.hostname.endsWith('.huawei.com') && !url.hostname.endsWith('.myhuaweicloud.com')) {
+    if (!loopbackMock && !isAgcHost(url.hostname) && !HUAWEI_DOWNLOAD_SUFFIXES.some(suffix => url.hostname.endsWith(suffix))) {
       throw new AgcError(`refusing report download to unexpected host: ${url.hostname}`)
     }
     const response = await fetch(url, { signal: AbortSignal.timeout(this.config.timeoutMs) })
@@ -150,3 +150,13 @@ export class AgcClient {
 }
 
 const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]', '::1'])
+
+/**
+ * Report files are handed out as pre-signed Huawei object-storage URLs. These
+ * are the vendor domains such URLs live on; nothing else is followed.
+ */
+const HUAWEI_DOWNLOAD_SUFFIXES = Object.freeze([
+  '.huawei.com',
+  '.huaweicloud.com',
+  '.myhuaweicloud.com',
+])

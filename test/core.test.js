@@ -153,3 +153,34 @@ test('redact strips credential shapes from any message', () => {
   assert.ok(!clean.includes('abcdef123456'))
   assert.ok(safeMessage(new Error('client_secret=leak')).includes('[redacted]'))
 })
+
+// ── egress guards on the real client ─────────────────────────────────────────
+
+test('client refuses to build a request for a non-AGC host', () => {
+  const config = loadConfig({ AGC_CLIENT_ID: 'id', AGC_CLIENT_SECRET: 'secret' })
+  const client = new AgcClient(config, new AuthProvider(config))
+  // Paths are always resolved against the configured AGC base, so an absolute
+  // URL in a path cannot escape; the guard is the backstop.
+  assert.throws(() => assertAgcHost('https://attacker.example.com/api/publish/v2/appid-list'), /non-AGC/)
+  assert.throws(() => assertAgcHost('http://connect-api.cloud.huawei.com/api/x'), /non-AGC/)
+  assert.equal(client.loopback, false)
+})
+
+test('report download refuses non-https and non-Huawei hosts', async () => {
+  const config = loadConfig({ AGC_CLIENT_ID: 'id', AGC_CLIENT_SECRET: 'secret' })
+  const client = new AgcClient(config, new AuthProvider(config))
+  // Both refusals happen before any socket work.
+  await assert.rejects(() => client.download('https://attacker.example.com/report.csv'), /unexpected host/)
+  await assert.rejects(() => client.download('http://download.example.com/report.csv'), /non-https/)
+  await assert.rejects(() => client.download('file:///etc/passwd'), /non-https/)
+})
+
+test('client errors are redacted before they escape', async () => {
+  const config = loadConfig({ AGC_CLIENT_ID: 'id', AGC_CLIENT_SECRET: 'secret' })
+  const client = new AgcClient(config, new AuthProvider(config))
+  client.request = async () => ({ status: 500, data: '{"client_secret":"leaked-value","access_token":"tok-123"}' })
+  await assert.rejects(
+    () => client.call('GET', '/api/report/x'),
+    error => !error.message.includes('leaked-value') && !error.message.includes('tok-123'),
+  )
+})

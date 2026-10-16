@@ -18,7 +18,6 @@ export const REPORTS = Object.freeze({
   'harmony-install-failed': { platform: 'harmonyos', path: '/api/report/harmony-report/v1/harmony/installFailedAnalysisExport/{appId}', desc: 'HarmonyOS install failures' },
   'harmony-user-analysis': { platform: 'harmonyos', path: '/api/report/harmony-report/v1/harmony/userAnalysisExport/{appId}', desc: 'HarmonyOS user analysis (new/active/retention)' },
   'harmony-atomic-distribute': { platform: 'harmonyos', path: '/api/report/harmony-report/v1/fa/distributeAnalysisExport/{appId}', desc: 'HarmonyOS atomic service distribution' },
-  'harmony-voc': { platform: 'harmonyos', path: '/api/report/harmony-report/v1/harmony/voc-report/{appId}', desc: 'HarmonyOS app source/VOC details' },
   download: { platform: 'android', path: '/api/report/distribution-operation-quality/v1/appDownloadExport/{appId}', desc: 'Downloads & installs (Android)' },
   'install-failed': { platform: 'android', path: '/api/report/distribution-operation-quality/v1/appDownloadFailExport/{appId}', desc: 'Install failures (Android)' },
   'new-and-retention': { platform: 'android', path: '/api/report/distribution-operation-quality/v1/addAdKpExport/{appId}', desc: 'New users & retention (Android)' },
