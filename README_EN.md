@@ -47,6 +47,27 @@ hands the conclusion back to the model.
 
 ## Quick start
 
+### 0. Do not want to fiddle? One command
+
+```bash
+git clone https://github.com/D-sp-wq/agc-analytics-mcp.git
+cd agc-analytics-mcp
+node scripts/setup.mjs
+```
+
+The wizard checks your Node version, asks which credential you have, reads the secret with echo off
+and stores it in `~/.agc` (readable only by you), verifies it offline, offers a real read-only smoke
+test, and finally prints a ready-to-paste client configuration with the paths for this machine —
+plus the no-file alternative that puts the two values straight into the client config.
+
+Also usable non-interactively:
+
+```bash
+node scripts/setup.mjs --client-id <id> --client-secret <secret>
+node scripts/setup.mjs --sa "/path/to/xxx-private.json"
+node scripts/setup.mjs --print-config-only    # print a config, write nothing
+```
+
 ### 1. Get AGC credentials
 
 > No credentials yet, or unsure which kind to create? Follow [docs/GETTING-CREDENTIALS.md](docs/GETTING-CREDENTIALS.md) — console path, both JSON shapes, permissions, and a troubleshooting table.

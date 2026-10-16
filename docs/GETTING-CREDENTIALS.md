@@ -2,6 +2,8 @@
 
 本插件只读 AGC 数据，所有请求都带你的凭据直连华为官方接口。本文用最少步骤把你从"没有凭据"带到"跑通冒烟测试"。
 
+> **懒得看文档？** 直接 `node scripts/setup.mjs` —— 一个向导走完全程，最后给你一段可粘贴进 AI 客户端的配置。
+
 > 官方文档（以官网为准，仅供交叉核对）：
 > - Connect API 总览：https://developer.huawei.com/consumer/cn/doc/AppGallery-connect-Guides/agcapi-overview-0000001158245083
 > - 获取 Token：https://developer.huawei.com/consumer/cn/doc/AppGallery-connect-References/agcapi-obtain_token-0000001158365043

@@ -180,8 +180,13 @@ if (existsSync(out) && !flag('--force')) {
   process.exit(2)
 }
 
-let clientId = process.env.AGC_CLIENT_ID ?? ''
-let clientSecret = process.env.AGC_CLIENT_SECRET ?? ''
+const envValue = name => {
+  const value = process.env[name]
+  return typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined
+}
+
+let clientId = envValue('AGC_CLIENT_ID') ?? ''
+let clientSecret = envValue('AGC_CLIENT_SECRET') ?? ''
 const interactive = clientId === '' || clientSecret === ''
 
 if (interactive) {

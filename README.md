@@ -46,6 +46,24 @@
 
 ## 快速开始
 
+### 0. 完全不想折腾？一条命令
+
+```bash
+git clone https://github.com/D-sp-wq/agc-analytics-mcp.git
+cd agc-analytics-mcp
+node scripts/setup.mjs
+```
+
+向导会：检查 Node 版本 → 问你有哪种凭据（API 客户端 / Service Account 文件）→ 用**不回显**的方式录入并保存到 `~/.agc`（权限仅你可读）→ 本地校验 → 问你要不要做一次真实只读验证 → **最后打印一段可直接粘贴进 AI 客户端的配置**（路径已按你的机器填好），并额外给出"不用文件、直接把两个值写进配置"的替代写法。
+
+随时可非交互使用：
+
+```bash
+node scripts/setup.mjs --client-id <id> --client-secret <secret>
+node scripts/setup.mjs --sa "C:\Users\你\Downloads\xxx-private.json"
+node scripts/setup.mjs --print-config-only    # 只看配置，不写任何文件
+```
+
 ### 1. 拿到 AGC 凭据
 
 > 没有凭据、或不确定该建哪一种？照着 [docs/GETTING-CREDENTIALS.md](docs/GETTING-CREDENTIALS.md) 做一遍即可（含控制台路径、两个 JSON 文件长什么样、权限与常见错误对照表）。
