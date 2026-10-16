@@ -49,6 +49,8 @@ hands the conclusion back to the model.
 
 ### 1. Get AGC credentials
 
+> No credentials yet, or unsure which kind to create? Follow [docs/GETTING-CREDENTIALS.md](docs/GETTING-CREDENTIALS.md) — console path, both JSON shapes, permissions, and a troubleshooting table.
+
 In [AppGallery Connect](https://developer.huawei.com/consumer/en/service/josp/agc/index.html) open
 「Users and permissions → API keys → Connect API」and create credentials. Both kinds may be configured:
 

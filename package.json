@@ -38,7 +38,8 @@
     "README.md",
     "README_EN.md",
     "LICENSE",
-    "SECURITY.md"
+    "SECURITY.md",
+    "docs/GETTING-CREDENTIALS.md"
   ],
   "repository": {
     "type": "git",
