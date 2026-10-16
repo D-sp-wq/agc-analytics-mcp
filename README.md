@@ -255,6 +255,22 @@ node scripts/handshake-check.mjs    # 真机 stdio 握手自检（CI 同款）
 node scripts/live-smoke.mjs         # 真实凭据冒烟（需 AGC_* 环境变量，不属于 CI）
 ```
 
+### 第一次用真实凭据验证（推荐顺序）
+
+```bash
+# 1) 离线预检：不联网，只检查凭据文件是否存在、格式对不对、有没有把
+#    Service Account 的 JSON 错填给 AGC_CLIENT_FILE（反之亦然）
+AGC_CLIENT_FILE=/绝对路径/api-client.json node scripts/live-smoke.mjs --check-only
+
+# 2) 真实冒烟：默认取最近 7 天，逐段报告成功/失败（只读调用）
+AGC_CLIENT_FILE=/绝对路径/api-client.json node scripts/live-smoke.mjs
+AGC_SERVICE_ACCOUNT_FILE=/绝对路径/private.json node scripts/live-smoke.mjs 110012345 --days=14
+```
+
+退出码：`0` 核心链路可用 / `1` 核心步骤失败 / `2` 凭据缺失或不可用 / `3` 命令行参数有误。
+输出里 `!` 是警告（该凭据或站点不支持的段落，核心链路仍然可用），`✘` 才是失败。
+`--json` 可输出机器可读结果，便于接入你自己的巡检。
+
 目录结构：
 
 ```

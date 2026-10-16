@@ -199,8 +199,25 @@ See [SECURITY.md](SECURITY.md) for the full threat model.
 ```bash
 npm test    # 55 tests: unit, protocol e2e and mock full-chain
 node scripts/check-secrets.mjs      # pre-commit secret scan
+node scripts/handshake-check.mjs    # real stdio handshake self-check (same as CI)
 node scripts/live-smoke.mjs         # real-credential smoke test (needs AGC_* env vars; not in CI)
 ```
+
+### First run with real credentials (recommended order)
+
+```bash
+# 1) offline pre-flight: no network. Checks the file exists and is well-formed,
+#    and catches a Service Account JSON pointed at by AGC_CLIENT_FILE (or the reverse)
+AGC_CLIENT_FILE=/abs/path/api-client.json node scripts/live-smoke.mjs --check-only
+
+# 2) the real smoke test: last 7 days by default, section by section, read-only
+AGC_CLIENT_FILE=/abs/path/api-client.json node scripts/live-smoke.mjs
+AGC_SERVICE_ACCOUNT_FILE=/abs/path/private.json node scripts/live-smoke.mjs 110012345 --days=14
+```
+
+Exit codes: `0` core path works / `1` a core step failed / `2` credentials missing or unusable / `3` bad arguments.
+`!` marks a warning — a section this credential or site cannot serve, with the core path still working; only `✘` is a failure.
+`--json` emits machine-readable output for your own checks.
 
 CI runs the suite on Windows and Linux with Node 20 and 22.
 
