@@ -69,14 +69,28 @@ function askHidden(rl, question, hidden) {
   })
 }
 
-/** Read everything from a non-TTY stdin and split it into lines. */
+/**
+ * Read everything from a non-TTY stdin and split it into lines.
+ *
+ * Input may already have arrived — and the stream may have ended — before these
+ * listeners attach, so buffered bytes are drained with read() as well;
+ * resolving on `readableEnded` alone returned an empty string.
+ */
 function readPipedLines() {
   return new Promise(resolve => {
     let data = ''
+    let done = false
+    const finish = () => {
+      if (done) return
+      done = true
+      resolve(data.split(/\r?\n/).map(line => line.trim()))
+    }
     process.stdin.setEncoding('utf8')
     process.stdin.on('data', chunk => { data += chunk })
-    process.stdin.on('end', () => resolve(data.split(/\r?\n/).map(line => line.trim())))
-    if (process.stdin.readableEnded === true) resolve(data.split(/\r?\n/).map(line => line.trim()))
+    process.stdin.on('end', finish)
+    let buffered
+    while ((buffered = process.stdin.read()) !== null) data += buffered
+    if (process.stdin.readableEnded === true) finish()
     process.stdin.resume()
   })
 }

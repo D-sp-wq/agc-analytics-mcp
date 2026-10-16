@@ -44,13 +44,29 @@ const step = text => say(`\n── ${text} ${'─'.repeat(Math.max(0, 58 - text.
 
 // ── tiny prompt helpers (terminal interactive, pipe line-by-line) ────────────
 
+/**
+ * Read everything from a non-TTY stdin.
+ *
+ * The input may have arrived — and the stream may already have ended — before
+ * these listeners are attached (a shell pipeline writes and closes quickly).
+ * Resolving on `readableEnded` alone returned an empty string and silently
+ * discarded the answers, so the buffered bytes are drained with read() too.
+ */
 function readPipedLines() {
   return new Promise(resolve => {
     let data = ''
+    let done = false
+    const finish = () => {
+      if (done) return
+      done = true
+      resolve(data.split(/\r?\n/).map(line => line.trim()))
+    }
     process.stdin.setEncoding('utf8')
     process.stdin.on('data', chunk => { data += chunk })
-    process.stdin.on('end', () => resolve(data.split(/\r?\n/).map(l => l.trim())))
-    if (process.stdin.readableEnded === true) resolve(data.split(/\r?\n/).map(l => l.trim()))
+    process.stdin.on('end', finish)
+    let buffered
+    while ((buffered = process.stdin.read()) !== null) data += buffered
+    if (process.stdin.readableEnded === true) finish()
     process.stdin.resume()
   })
 }
@@ -226,6 +242,9 @@ if (!flag('--print-config-only')) {
     }
     if (existsSync(saPath) && !flag('--force')) say(`! 已存在 ${saPath}，保留原文件`)
     else {
+      // The credential directory may not exist yet on a fresh machine — the
+      // API-client path creates it, this one has to as well.
+      mkdirSync(dirname(saPath), { recursive: true, mode: 0o700 })
       copyFileSync(source, saPath)
       try { chmodSync(saPath, 0o600) } catch { /* best effort */ }
       say(`✔ 已保存：${saPath}`)
