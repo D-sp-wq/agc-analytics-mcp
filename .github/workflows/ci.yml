@@ -34,10 +34,17 @@ jobs:
         run: node scripts/check-secrets.mjs
 
       - name: Verify the server starts and answers a handshake
-        shell: bash
+        run: node scripts/handshake-check.mjs
+
+      # Linux-only: proves the packed tarball (what `npx github:` installs) runs.
+      - name: Verify the published tarball runs from an install
+        if: runner.os == 'Linux'
         run: |
-          printf '%s\n' \
-            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' \
-            '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
-            | node index.js 2>/dev/null > handshake.jsonl
-          node -e "const l=require('fs').readFileSync('handshake.jsonl','utf8').trim().split('\n').map(JSON.parse);const t=l.find(m=>m.id===2);if(!t||t.result.tools.length!==13){console.error('handshake failed');process.exit(1)};console.log('handshake ok:',t.result.tools.length,'tools')"
+          TGZ="$(npm pack --silent | tail -n 1)"
+          mkdir -p /tmp/agc-install && cd /tmp/agc-install
+          npm init -y > /dev/null
+          npm install "$GITHUB_WORKSPACE/$TGZ" --no-audit --no-fund
+          node -e "const m=require('/tmp/agc-install/node_modules/agc-analytics-mcp/package.json');console.log('installed',m.name,m.version)"
+          printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"tools/list"}' \
+            | node node_modules/agc-analytics-mcp/index.js 2>/dev/null \
+            | node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{const t=JSON.parse(s.trim()).result.tools;if(t.length!==13)process.exit(1);console.log('installed bin answers with',t.length,'tools')})"
