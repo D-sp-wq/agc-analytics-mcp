@@ -201,6 +201,36 @@ export function trendFor(rows, metric, opts = {}) {
 }
 
 /**
+ * Pick the metric a report is "about" when the caller did not name one:
+ * download/install/new-user style columns first, otherwise the first numeric
+ * column.
+ * @param {string[]} columns
+ */
+export function pickPrimaryMetric(columns) {
+  const preferred = /(download|install|新增|下载|安装|active|活跃|new.?user|用户)/i
+  return columns.find(column => preferred.test(column)) ?? columns[0] ?? null
+}
+
+/** Markdown bullet summary of a `trendFor` result (used inside digests). */
+export function trendLines(trend) {
+  if (trend === null || trend === undefined) return ['- no data']
+  if (trend.error !== undefined) return [`- ⚠ ${trend.error}`]
+  const lines = [
+    `- ${trend.metric}: ${trend.totalLast7} over the last 7 days (daily average ${trend.dailyAverage.toFixed(1)})`,
+    `- range ${trend.firstDay} → ${trend.lastDay} (${trend.daysCovered} day(s)); latest ${trend.lastValue}`,
+    `- direction ${trend.direction} (${trend.directionStrength}); peak ${trend.peak.value} on ${trend.peak.day}, trough ${trend.trough.value} on ${trend.trough.day}`,
+    `- trend: ${trend.sparkline}`,
+  ]
+  if (trend.wowChange !== undefined && trend.wowChange !== null) {
+    lines.push(`- week over week: ${(trend.wowChange * 100).toFixed(1)}%`)
+  }
+  for (const anomaly of trend.anomalyDays ?? []) {
+    lines.push(`- ⚠ anomaly ${anomaly.day}: ${anomaly.value} (z=${anomaly.z})`)
+  }
+  return lines
+}
+
+/**
  * Summarise every numeric column briefly (used when the caller does not pick
  * a metric): per-column total-last-7, WoW and direction.
  */

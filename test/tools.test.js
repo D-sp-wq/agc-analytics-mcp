@@ -197,33 +197,55 @@ test('agc_request refuses write paths even when run() is called directly', async
 
 // ── digests ──────────────────────────────────────────────────────────────────
 
-test('agc_daily_report renders markdown with degraded sections', async () => {
+test('agc_daily_report renders markdown with real analytics per section', async () => {
   const client = fakeClient([
     REPORT_EXPORT_ROUTE,
-    { match: /^POST .*crash\/metric/, data: { value: { list: [{ date: '2026-01-15', count: 2 }] } } },
-    { match: /^GET .*reviews$/, data: { reviews: [] } },
+    { match: /^POST .*crash\/metric/, data: { value: { list: [{ date: '2026-01-15', count: 2 }, { date: '2026-01-16', count: 5 }] } } },
+    { match: /^GET .*reviews$/, data: { reviews: [{ content: '闪退', rating: 1, appVersion: '1.0' }, { content: '闪退 又闪退', rating: 1, appVersion: '1.0' }, { content: '闪退 三次', rating: 2, appVersion: '1.1' }, { content: '很好用', rating: 5, appVersion: '1.1' }] } },
   ])
   const registry = registryWith(client)
   const res = await registry.get('agc_daily_report').run({ appId: 'a', date: '2026-01-15' })
-  assert.ok(res.markdown.includes('# AGC Daily Report — 20260115'))
-  assert.ok(res.markdown.includes('Crash metrics'))
-  assert.ok(res.markdown.includes('2'))
+  assert.match(res.markdown, /# AGC Daily Report — 20260115/)
+  // Trend section carries the metrics the analytics layer computed.
+  assert.match(res.markdown, /Download & install trend/)
+  assert.match(res.markdown, /- 下载量: 310 over the last 7 days/)
+  assert.match(res.markdown, /direction/)
+  // Crash section summarises rather than dumping raw JSON.
+  assert.match(res.markdown, /- crash events: 7 over 2 day\(s\)/)
+  // Review section aggregates stars and keywords.
+  assert.match(res.markdown, /average rating: 2\.25/)
+  assert.match(res.markdown, /top keywords: .*闪退/)
 })
 
-test('agc_weekly_report includes WoW section and saves to outPath', async () => {
+test('agc_weekly_report compares the previous week and saves to outPath', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'agc-week-'))
   try {
     const out = join(dir, 'weekly.md')
+    const requests = []
     const client = fakeClient([
       REPORT_EXPORT_ROUTE,
-      CRASH_ROUTE,
+      {
+        match: /^POST .*crash\/metric/,
+        data: { value: { list: [
+          { date: '2026-01-12', version: '1.0', count: 7 },
+          { date: '2026-01-13', version: '1.1', count: 3 },
+        ] } },
+      },
       { match: /^GET .*reviews$/, data: { reviews: [] } },
     ])
+    const originalCall = client.call.bind(client)
+    client.call = async (method, path, opts) => { requests.push({ method, path, start: opts?.query?.startTime }); return originalCall(method, path, opts) }
     const registry = registryWith(client)
     const res = await registry.get('agc_weekly_report').run({ appId: 'a', endDate: '2026-01-18', outPath: out })
-    assert.ok(res.markdown.includes('# AGC Weekly Report — week ending 20260118'))
+    assert.match(res.markdown, /# AGC Weekly Report — week ending 20260118/)
+    assert.match(res.markdown, /\| last 7 days total \| 310 \|/)
+    assert.match(res.markdown, /top versions: 1\.0/)
     assert.ok(existsSync(out))
     assert.equal(res.savedTo, out)
+    // The previous week was actually requested (2026-01-05 → 2026-01-11).
+    const windows = requests.filter(r => r.path.includes('appDownloadAnalysisExport')).map(r => r.start)
+    assert.ok(windows.includes('20260112'), `current week requested: ${windows.join(',')}`)
+    assert.ok(windows.includes('20260105'), `previous week requested: ${windows.join(',')}`)
   } finally {
     rmSync(dir, { recursive: true, force: true })
   }

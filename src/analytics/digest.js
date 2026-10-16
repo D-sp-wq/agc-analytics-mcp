@@ -67,6 +67,11 @@ export async function weeklyDigest({ endDay, appName, sections }) {
         lines.push('|---|---|---|')
         for (const row of toRows(current, previous)) lines.push(row)
       }
+      // Notes may already be formatted bullets ("- x", "> x"); only prefix the
+      // ones that are not.
+      for (const note of current?.notes ?? []) {
+        lines.push(/^\s*([-*>]|\d+\.)/.test(note) ? note : `- ${note}`)
+      }
       lines.push('')
     } catch (error) {
       lines.push(`## ${spec.title} ⚠`)
