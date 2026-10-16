@@ -66,7 +66,13 @@ node scripts/save-credential.mjs --check        # 只检查现有配置，不写
 
 ---
 
-## 2. 创建 Service Account（可选）
+## 2. 创建 Service Account（可选，但**不依赖 AGC 菜单**，找不到 API 密钥时先走这条）
+
+路线：华为开发者联盟 **API Console** → API服务 → 配置 → 选择项目 → **创建服务帐号密钥文件** → 生成公私钥 → 创建并下载 JSON。
+
+直达：<https://developer.huawei.com/consumer/cn/console/api/credentials>
+
+也可以：AGC → 同一页面切到 **Service Account** 页签 → 创建（类型选**开发者级**）。
 
 1. 同一页面切到 **Service Account** 页签 → **创建**。
 2. 类型选 **开发者级**（developer-level），不要选项目级 —— 项目级只能访问单个项目。

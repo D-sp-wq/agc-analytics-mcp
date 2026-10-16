@@ -183,7 +183,16 @@ if (!flag('--print-config-only')) {
       clientSecret = secret
     }
     if (choice === '2' || choice === '3') {
-      say('\n把控制台下载的 *private.json 直接拖到这里（或粘贴完整路径），然后回车：')
+      say('')
+      say('┌─ 服务帐号密钥文件从哪来？─────────────────────────────────')
+      say('│ 开发者联盟 API Console：')
+      say('│   https://developer.huawei.com/consumer/cn/console/api/credentials')
+      say('│ 路径：API服务 → 配置 → 选择项目 → 创建服务帐号密钥文件')
+      say('│      → 生成公私钥 → 创建并下载 JSON')
+      say('│ （AGC 里也有：用户与访问 → API 密钥 → Service Account → 创建，')
+      say('│   类型选开发者级，同样会自动下载 *private.json）')
+      say('└─────────────────────────────────────────────────────────────')
+      say('把下载到的 *private.json 直接拖到这里（或粘贴完整路径），然后回车：')
       const [file] = await ask([{ label: '文件路径: ' }])
       saSource = file
     }

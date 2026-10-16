@@ -1,53 +1,90 @@
 # 我找不到「API 密钥」入口
 
-这是最常见的第一个坎。**先确认你在哪个控制台** —— 这两个控制台长得很像，但只有一个有 Connect API 凭据。
+这是失败率最高的一步。华为的凭据入口分散在**三个不同的控制台**里，而**放应用的地方不一定是放凭据的地方**。
 
-## 两个控制台
+## 三个控制台，各放什么
 
-| | HarmonyOS 开发者中心（HDC） | AppGallery Connect（AGC） |
-|---|---|---|
-| 地址 | `developer.huawei.com/consumer/cn/hdc-console/index.html#/home/…` | `https://developer.huawei.com/consumer/cn/service/josp/agc/index.html` |
-| 顶部页签 | 开发者管理 / 应用管理 / 智能体管理 | 我的项目 / 用户与访问 / … |
-| 左侧「用户与访问」下面有什么 | 开发者信息、团队账号、关联主体、沙盒测试账号、第三方授权管理、协议与声明、隐私联系信息 | **API 密钥**（展开后有 Connect API）、团队成员等 |
-| 有 Connect API 凭据吗 | ❌ **没有** | ✅ **有** |
+| 控制台 | 地址特征 | 你在这里能做什么 | 有 API 凭据吗 |
+|---|---|---|---|
+| **HarmonyOS 开发者中心**（HDC） | `…/hdc-console/index.html#/…` | APP ID 列表、开放能力管理、ACL 权限、项目管理、项目套餐/配额、证书与设备 | ❌ **没有** |
+| **AppGallery Connect**（AGC） | `…/service/josp/agc/index.html` | 我的项目、上架分发、运营分析、用户与访问 | ✅ API 密钥 → Connect API（API 客户端） |
+| **开发者联盟 API Console** | `…/console/api/credentials` | **API服务 → 配置** → 创建**服务帐号密钥文件** | ✅ **服务帐号私钥 JSON** |
 
-> 如果你的左侧「用户与访问」展开后是「开发者信息 / 团队账号 / 关联主体 / 沙盒测试账号 / 第三方授权管理 / 协议与声明 / 隐私联系信息」，那你就在 HDC —— 请改用上面的 AGC 地址。
+### 怎么一眼认出自己在哪个
 
-## 正确路径
+- 顶部页签是「开发者管理 / 应用管理 / 智能体管理」，左侧「用户与访问」下面是**开发者信息 / 团队账号 / 关联主体 / 沙盒测试账号 / 第三方授权管理 / 协议与声明 / 隐私联系信息** → 你在 **HDC**。这里**没有**凭据入口，别再找了（它的「开放能力管理」是给应用开能力的开关，不是发凭据的）。
+- 有「我的项目」「用户与访问 → API 密钥」 → 你在 **AGC**，这里建 **API 客户端**（`client_id` + `client_secret`）。
+- 页面标题是「API Console」、有「API服务 → 配置」 → 你在 **API Console**，这里下 **服务帐号密钥文件**（`*private.json`）。
 
-1. 打开 **AGC 控制台**：<https://developer.huawei.com/consumer/cn/service/josp/agc/index.html>
+---
+
+## 路线 A：服务帐号私钥文件（推荐先做，不依赖 AGC 菜单）
+
+1. 打开 <https://developer.huawei.com/consumer/cn/console/api/credentials>
+2. 进入 **API服务 → 配置**
+3. 选择你的鸿蒙应用所属的**项目**
+4. 点击 **创建服务帐号密钥文件**
+5. 点击 **生成公私钥**：公钥上传，**私钥自己保存**
+6. 填名称与描述 → **创建并下载 JSON**（文件下载到本地）
+7. 那个 JSON 就是本插件要的（字段：`key_id` / `private_key` / `sub_account`）
+
+交给插件：
+
+```bash
+node scripts/setup.mjs --sa "C:\Users\你\Downloads\下载下来的那个-private.json"
+```
+
+它覆盖除「评论/评分」外的全部工具（报表趋势、Crash 指标、日报周报都能用）。
+
+> 顺带可以拿到应用的 **Client ID**：AGC → `我的项目` → 选项目 → **项目设置** → 下拉到「应用」区域。
+
+---
+
+## 路线 B：API 客户端（评论/评分必须要它）
+
+1. 打开 AGC：<https://developer.huawei.com/consumer/cn/service/josp/agc/index.html>
 2. 左侧 **用户与访问 → API 密钥**
-3. 页面上有 **Connect API** 分区，里面是两个页签：
-   - **API 客户端** → 创建（**项目选 N/A**）→ 得到 `client_id` + `client_secret`
-   - **Service Account** → 创建（类型选**开发者级**）→ 自动下载 `*private.json`
+3. 若有 **Connect API** 分区 → **API 客户端** 页签 → 创建（**项目选 N/A**）→ 得到 `client_id` + `client_secret`
+4. 交给插件：
+
+```bash
+node scripts/setup.mjs --client-id <id> --client-secret <secret>
+```
 
 官方文档（以官网为准）：
 - 获取服务端授权：<https://developer.huawei.com/consumer/cn/doc/App/agc-help-connect-api-obtain-server-auth-0000002271134661>
 - 创建 API 客户端：<https://developer.huawei.com/consumer/cn/doc/appgallery-connect-Guides/creating-api-client-0000001738812141>
 
-## 在 AGC 里也看不到「API 密钥」？逐条排查
+---
+
+## 还是没有？逐条排查
 
 | 可能原因 | 怎么确认 / 怎么办 |
 |---|---|
-| 打开了 HDC 而不是 AGC | 对照上表；地址栏里应出现 `service/josp/agc/index.html` |
-| 账号不是团队创建者/管理员 | 「用户与访问 → 团队账号」看自己的角色；只有创建者/管理员能管理 API 密钥，普通成员看不到该入口 → 找团队管理员要，或让他按本文创建一个给你 |
-| 账号还没完成开发者实名认证 | 「用户与访问 → 开发者信息」看认证状态；未认证时部分入口不出现 |
-| 账号刚注册、还没有 AGC 项目 | 先建一个项目（AGC 首页「我的项目 → 创建项目」），再回「用户与访问 → API 密钥」 |
-| 浏览器缓存/旧页面 | 退出重登一次，或用无痕窗口打开 AGC 地址 |
-| 页面改版、菜单改名 | 以上表为准看「用户与访问」下有没有「API 密钥」；没有就按官方文档「获取服务端授权」页里的按钮逐级点进去 |
+| 在 HDC 里找凭据 | 对照上面三行「怎么一眼认出」 |
+| AGC 的「用户与访问」下没有「API 密钥」 | 这个账号在 AGC 侧没有该入口 → 走**路线 A**（API Console 的服务帐号），它不依赖该菜单 |
+| 账号不是团队创建者/管理员 | 「用户与访问 → 团队账号」看角色；API 密钥通常只有创建者/管理员能看 |
+| 未完成开发者实名认证 | 「用户与访问 → 开发者信息」看认证状态 |
+| 还没有 AGC 项目 | AGC 首页「我的项目 → 创建项目」，再回来 |
+| 页面改版 / 菜单改名 | 以功能为准：找「API」「密钥」「凭据」「服务帐号」这些字样，别死记菜单名 |
+| 浏览器缓存旧页面 | 退出重登，或用无痕窗口 |
 
 ## 还是不行？
 
-把 **AGC 控制台**（不是 HDC）左侧菜单展开的那张截图发出来，我按图告诉你下一步点哪里 —— 你就是这么发现 HDC 里没有这个入口的。
+把**你在哪个控制台**、以及左侧菜单展开的截图发出来（就像你发现 HDC 里没有 API 密钥那样），我按图告诉你下一步点哪里。
 
-## 顺带一提：这个仓库的自检能帮你确认凭据是否可用
+## 自检工具
 
-拿到 `client_id`/`client_secret` 后：
+拿到任何凭据文件后，先跑不联网的校验，能立刻分清"入口找错了"还是"文件填错了"：
 
 ```bash
-node scripts/setup.mjs          # 向导：录入 + 本地校验 + 打印可粘贴配置
-# 或
-AGC_CLIENT_FILE=/绝对路径/api-client.json node scripts/live-smoke.mjs --check-only
+node scripts/live-smoke.mjs --check-only
 ```
 
-`--check-only` 不联网，只检查文件是否存在、字段是否齐全、有没有把两种凭据填反 —— 定位"是入口找错了"还是"凭据填错了"很快。
+---
+
+## 信息来源
+
+- 三控制台分工与路线 A 的操作步骤：与 DCloud 官方文档 [uni-push 鸿蒙厂商推送专题](https://doc.dcloud.net.cn/uniCloud/uni-cloud-push/harmony.html)（2025-08 更新）中"创建服务帐号密钥文件""获取 Client ID"两节一致
+- 路线 B：AppGallery Connect 官方文档"获取服务端授权""创建 API 客户端"（链接见上）
+- HDC 菜单构成：以你自己账号的截图为准（`hdc-console`，含 沙盒测试账号 等条目）
