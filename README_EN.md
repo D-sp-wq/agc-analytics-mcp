@@ -61,14 +61,28 @@ In [AppGallery Connect](https://developer.huawei.com/consumer/en/service/josp/ag
 
 Keep credential files outside the repository; `.gitignore` already ignores `.env*` and `*.local.json`.
 
-### 2. Configure your client
+### 2. Install (pick one)
+
+| Option | Command | Notes |
+|---|---|---|
+| **A. Clone and run (recommended)** | `git clone https://github.com/D-sp-wq/agc-analytics-mcp.git`, then point the client at `node <path>/index.js` | Works everywhere; zero dependencies, zero install, only Node ≥ 20 needed |
+| **B. npx straight from GitHub** | `npx --allow-git=all -y github:D-sp-wq/agc-analytics-mcp` | Requires npm to allow git dependencies (see the note below) |
+| **C. npm package** | `npm publish` yourself, then `npx -y agc-analytics-mcp` | Useful for internal distribution |
+
+> **⚠️ npm 12 disables git dependencies by default.** A plain `npx -y github:...` fails with
+> `EALLOWGIT: Fetching packages of type "git" have been disabled`. Either add `--allow-git=all`,
+> or use option A — cloning and running with `node` never touches npm. npm 11 and earlier are unaffected.
+
+### 3. Configure your client
+
+Option A (clone) — `command` points at the cloned entry point:
 
 ```jsonc
 {
   "mcpServers": {
     "agc": {
-      "command": "npx",
-      "args": ["-y", "github:D-sp-wq/agc-analytics-mcp"],
+      "command": "node",
+      "args": ["C:/tools/agc-analytics-mcp/index.js"],
       "env": {
         "AGC_CLIENT_FILE": "/absolute/path/to/api-client.json",
         "AGC_SERVICE_ACCOUNT_FILE": "/absolute/path/to/service-account.json",
@@ -79,9 +93,16 @@ Keep credential files outside the repository; `.gitignore` already ignores `.env
 }
 ```
 
+Option B (npx) — replace `command`/`args` with:
+
+```jsonc
+      "command": "npx",
+      "args": ["--allow-git=all", "-y", "github:D-sp-wq/agc-analytics-mcp"],
+```
+
 | Client | Where |
 |---|---|
-| Claude Code | `claude mcp add agc -s user -e AGC_CLIENT_FILE=... -- npx -y github:D-sp-wq/agc-analytics-mcp` |
+| Claude Code | `claude mcp add agc -s user -- node /abs/path/agc-analytics-mcp/index.js` (plus `-e AGC_CLIENT_FILE=...`) |
 | Claude Desktop | Windows `%APPDATA%\Claude\claude_desktop_config.json`; macOS `~/Library/Application Support/Claude/claude_desktop_config.json` |
 | Cursor | `~/.cursor/mcp.json` or `.cursor/mcp.json` |
 | VS Code (Copilot Agent) | `.vscode/mcp.json`, key `servers`, add `"type": "stdio"` |
@@ -90,9 +111,9 @@ Keep credential files outside the repository; `.gitignore` already ignores `.env
 | Trae / DevEco Studio / Cherry Studio | Paste the JSON above into their MCP settings |
 
 > **Windows**: a few clients cannot spawn `npx` directly — use `"command": "cmd"` with
-> `"args": ["/c","npx","-y","github:D-sp-wq/agc-analytics-mcp"]`.
+> `"args": ["/c","npx", ...]`, and prefer forward slashes in paths (`C:/tools/...`).
 
-### 3. From source (optional)
+### 4. Run the tests from source
 
 ```bash
 git clone https://github.com/D-sp-wq/agc-analytics-mcp.git

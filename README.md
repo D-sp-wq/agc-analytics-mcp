@@ -66,14 +66,28 @@
 
 > 凭据文件请放在仓库之外，不要提交进 Git。`.gitignore` 已忽略 `.env*` 与 `*.local.json`。
 
-### 2. 配置客户端（同一套「命令 + 环境变量」）
+### 2. 安装方式（三选一）
+
+| 方式 | 命令 | 适用 |
+|---|---|---|
+| **A. 克隆即用（最稳，推荐）** | `git clone https://github.com/D-sp-wq/agc-analytics-mcp.git` 然后用 `node <路径>/index.js` 启动 | 任何环境。零依赖、零安装，只需要 Node ≥ 20 |
+| **B. npx 直连 GitHub** | `npx --allow-git=all -y github:D-sp-wq/agc-analytics-mcp` | 允许 npm 拉取 git 依赖的环境（见下方提示） |
+| **C. npm 包** | 由你自行 `npm publish` 后 `npx -y agc-analytics-mcp` | 想给团队内分发时 |
+
+> **⚠️ npm 12 起默认禁用 git 依赖**：直接 `npx -y github:...` 会报 `EALLOWGIT: Fetching packages of type "git" have been disabled`。
+> 两种解法：加 `--allow-git=all`（如上），或者改用方式 A —— 克隆后用 `node` 启动，完全不经过 npm。
+> npm 11 及更早版本没有该限制。
+
+### 3. 配置客户端（同一套「命令 + 环境变量」）
+
+方式 A（克隆）的配置 —— `command` 指向克隆下来的 `index.js`：
 
 ```jsonc
 {
   "mcpServers": {
     "agc": {
-      "command": "npx",
-      "args": ["-y", "github:D-sp-wq/agc-analytics-mcp"],
+      "command": "node",
+      "args": ["C:/tools/agc-analytics-mcp/index.js"],
       "env": {
         "AGC_CLIENT_FILE": "/absolute/path/to/api-client.json",
         "AGC_SERVICE_ACCOUNT_FILE": "/absolute/path/to/service-account.json",
@@ -84,11 +98,18 @@
 }
 ```
 
+方式 B（npx）的配置 —— 把 `command`/`args` 换成：
+
+```jsonc
+      "command": "npx",
+      "args": ["--allow-git=all", "-y", "github:D-sp-wq/agc-analytics-mcp"],
+```
+
 各客户端的配置文件位置：
 
 | 客户端 | 位置 |
 |---|---|
-| Claude Code | `claude mcp add agc -s user -e AGC_CLIENT_FILE=... -- npx -y github:D-sp-wq/agc-analytics-mcp` |
+| Claude Code | `claude mcp add agc -s user -- node /绝对路径/agc-analytics-mcp/index.js`（加 `-e AGC_CLIENT_FILE=...`） |
 | Claude Desktop | Windows `%APPDATA%\Claude\claude_desktop_config.json`；macOS `~/Library/Application Support/Claude/claude_desktop_config.json` |
 | Cursor | 全局 `~/.cursor/mcp.json` 或项目内 `.cursor/mcp.json` |
 | VS Code (Copilot Agent) | `.vscode/mcp.json`，键名为 `servers`，需加 `"type": "stdio"` |
@@ -96,9 +117,9 @@
 | Gemini CLI | `~/.gemini/settings.json` |
 | Trae / DevEco Studio / Cherry Studio | 各自的 MCP 设置面板粘贴上面的 JSON |
 
-> **Windows 提示**：少数客户端无法直接启动 `npx`，把 `"command"` 改成 `"cmd"`，`"args"` 改成 `["/c","npx","-y","github:D-sp-wq/agc-analytics-mcp"]`。
+> **Windows 提示**：少数客户端无法直接启动 `npx`，把 `"command"` 改成 `"cmd"`，`"args"` 改为 `["/c","npx", ...]`；路径用正斜杠 `C:/tools/...` 最省事。
 
-### 3. 从源码运行（可选）
+### 4. 从源码跑测试
 
 ```bash
 git clone https://github.com/D-sp-wq/agc-analytics-mcp.git

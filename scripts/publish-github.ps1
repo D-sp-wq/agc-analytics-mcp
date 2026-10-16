@@ -124,7 +124,7 @@ Client configuration:
   "mcpServers": {
     "agc": {
       "command": "npx",
-      "args": ["-y", "github:$GitHubUser/$RepoName"],
+      "args": ["--allow-git=all", "-y", "github:$GitHubUser/$RepoName"],
       "env": {
         "AGC_CLIENT_FILE": "/absolute/path/to/api-client.json",
         "AGC_SERVICE_ACCOUNT_FILE": "/absolute/path/to/service-account.json",
