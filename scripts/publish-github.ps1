@@ -37,7 +37,7 @@ function Fail([string]$text) { Write-Host "`n[FAIL] $text" -ForegroundColor Red;
 
 if (-not $SkipChecks) {
   Write-Step 'Running tests'
-  node --test 'test/**/*.test.js'
+  node scripts/run-tests.mjs
   if ($LASTEXITCODE -ne 0) { Fail 'Tests failed — not publishing.' }
 
   Write-Step 'Scanning for committed secrets'

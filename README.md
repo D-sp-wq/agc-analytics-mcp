@@ -124,7 +124,7 @@
 ```bash
 git clone https://github.com/D-sp-wq/agc-analytics-mcp.git
 cd agc-analytics-mcp
-node --test "test/**/*.test.js"   # 55 项测试，无需网络与凭据
+npm test   # 55 项测试，无需网络与凭据
 node index.js                     # 直接以 stdio 方式启动
 ```
 
@@ -249,7 +249,7 @@ agc_weekly_report { appId, endDate: "2026-06-07", outPath: "D:/reports/agc-week.
 ## 开发
 
 ```bash
-node --test "test/**/*.test.js"    # 单元 + 协议 e2e + mock 全链路，55 项
+npm test    # 单元 + 协议 e2e + mock 全链路，55 项
 node scripts/check-secrets.mjs      # 提交前密钥扫描
 node scripts/handshake-check.mjs    # 真机 stdio 握手自检（CI 同款）
 node scripts/live-smoke.mjs         # 真实凭据冒烟（需 AGC_* 环境变量，不属于 CI）

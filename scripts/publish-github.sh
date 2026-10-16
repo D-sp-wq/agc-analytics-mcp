@@ -21,7 +21,7 @@ fail() { printf '\n[FAIL] %s\n' "$1" >&2; exit 1; }
 
 if [ "${SKIP_CHECKS:-0}" != "1" ]; then
   step 'Running tests'
-  node --test 'test/**/*.test.js' || fail 'Tests failed — not publishing.'
+  node scripts/run-tests.mjs || fail 'Tests failed — not publishing.'
 
   step 'Scanning for committed secrets'
   node scripts/check-secrets.mjs || fail 'Secret scan failed — not publishing.'

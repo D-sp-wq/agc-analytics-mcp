@@ -118,7 +118,7 @@ Option B (npx) — replace `command`/`args` with:
 ```bash
 git clone https://github.com/D-sp-wq/agc-analytics-mcp.git
 cd agc-analytics-mcp
-node --test "test/**/*.test.js"   # 55 tests, no network and no credentials needed
+npm test   # 55 tests, no network and no credentials needed
 node index.js                     # start as a stdio server
 ```
 
@@ -197,7 +197,7 @@ See [SECURITY.md](SECURITY.md) for the full threat model.
 ## Development
 
 ```bash
-node --test "test/**/*.test.js"    # 55 tests: unit, protocol e2e and mock full-chain
+npm test    # 55 tests: unit, protocol e2e and mock full-chain
 node scripts/check-secrets.mjs      # pre-commit secret scan
 node scripts/live-smoke.mjs         # real-credential smoke test (needs AGC_* env vars; not in CI)
 ```

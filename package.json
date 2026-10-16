@@ -24,7 +24,7 @@
   },
   "scripts": {
     "start": "node index.js",
-    "test": "node --test \"test/**/*.test.js\"",
+    "test": "node scripts/run-tests.mjs",
     "check:secrets": "node scripts/check-secrets.mjs",
     "smoke": "node scripts/live-smoke.mjs",
     "publish:github": "node -e \"console.log('Run: pwsh -File scripts/publish-github.ps1 <your-github-user>  (or ./scripts/publish-github.sh <your-github-user>)')\""

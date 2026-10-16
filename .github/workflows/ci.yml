@@ -28,7 +28,7 @@ jobs:
 
       # No `npm install`: the package has zero dependencies and no build step.
       - name: Run tests
-        run: node --test "test/**/*.test.js"
+        run: npm test   # scripts/run-tests.mjs enumerates the files (Node 20 has no --test glob)
 
       - name: Scan for committed secrets
         run: node scripts/check-secrets.mjs
