@@ -50,12 +50,18 @@ const readJson = path => {
  * the classic mistakes explicitly — a mis-shaped file is the most common first
  * failure, and the raw config problems are easy to misread.
  */
+/** Values that ship in the template files — a file still holding them is not a credential. */
+const PLACEHOLDER = /在此粘贴|你的 client|your[_-]?client|YOUR_|xxx+|placeholder|example/i
+
 function preflight(config, env = process.env) {
   const findings = []
+  /** Paths already reported as missing, so the config problem is not repeated. */
+  const missing = new Set()
 
   const clientFile = env.AGC_CLIENT_FILE
   if (clientFile !== undefined && clientFile !== '') {
     if (!existsSync(clientFile)) {
+      missing.add(clientFile)
       findings.push({ level: 'error', text: `AGC_CLIENT_FILE does not exist: ${clientFile}` })
     } else {
       const body = readJson(clientFile)
@@ -64,6 +70,8 @@ function preflight(config, env = process.env) {
         findings.push({ level: 'error', text: 'AGC_CLIENT_FILE looks like a Service Account file (key_id/private_key) — point AGC_SERVICE_ACCOUNT_FILE at it instead' })
       } else if (typeof (body.client_id ?? body.clientId) !== 'string' || typeof (body.client_secret ?? body.clientSecret) !== 'string') {
         findings.push({ level: 'error', text: `AGC_CLIENT_FILE needs string fields client_id and client_secret (got: ${Object.keys(body).join(', ') || 'no fields'})` })
+      } else if (PLACEHOLDER.test(String(body.client_id ?? body.clientId)) || PLACEHOLDER.test(String(body.client_secret ?? body.clientSecret))) {
+        findings.push({ level: 'error', text: `AGC_CLIENT_FILE still holds template/placeholder values: ${clientFile} — copy the real client_id and client_secret in, or run node scripts/save-credential.mjs` })
       } else {
         findings.push({ level: 'ok', text: `AGC_CLIENT_FILE ok (client_id …${String(body.client_id ?? body.clientId).slice(-4)})` })
       }
@@ -73,6 +81,7 @@ function preflight(config, env = process.env) {
   const saFile = env.AGC_SERVICE_ACCOUNT_FILE
   if (saFile !== undefined && saFile !== '') {
     if (!existsSync(saFile)) {
+      missing.add(saFile)
       findings.push({ level: 'error', text: `AGC_SERVICE_ACCOUNT_FILE does not exist: ${saFile}` })
     } else {
       const body = readJson(saFile)
@@ -81,6 +90,8 @@ function preflight(config, env = process.env) {
         findings.push({ level: 'error', text: 'AGC_SERVICE_ACCOUNT_FILE looks like an API-client file (client_id/client_secret) — point AGC_CLIENT_FILE at it instead' })
       } else if (typeof body.key_id !== 'string' || typeof body.private_key !== 'string' || typeof body.sub_account !== 'string') {
         findings.push({ level: 'error', text: `AGC_SERVICE_ACCOUNT_FILE needs key_id, private_key and sub_account (got: ${Object.keys(body).join(', ') || 'no fields'})` })
+      } else if (PLACEHOLDER.test(String(body.key_id)) || PLACEHOLDER.test(String(body.sub_account))) {
+        findings.push({ level: 'error', text: `AGC_SERVICE_ACCOUNT_FILE still holds template/placeholder values: ${saFile} — use the file downloaded from the console` })
       } else {
         findings.push({ level: 'ok', text: `AGC_SERVICE_ACCOUNT_FILE ok (sub_account=${body.sub_account})` })
       }
@@ -94,7 +105,12 @@ function preflight(config, env = process.env) {
     findings.push({ level: 'error', text: 'no AGC credentials configured' })
   }
 
-  for (const problem of config.problems) findings.push({ level: 'warn', text: problem })
+  // Config-level problems are noise when the same path was already reported as
+  // missing above (ENOENT would show twice for one mistake).
+  for (const problem of config.problems) {
+    if ([...missing].some(path => problem.includes(path))) continue
+    findings.push({ level: 'warn', text: problem })
+  }
   return findings
 }
 
