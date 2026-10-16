@@ -103,7 +103,7 @@
 ```bash
 git clone https://github.com/YOUR_GITHUB_USERNAME/agc-analytics-mcp.git
 cd agc-analytics-mcp
-node --test "test/**/*.test.js"   # 53 项测试，无需网络与凭据
+node --test "test/**/*.test.js"   # 55 项测试，无需网络与凭据
 node index.js                     # 直接以 stdio 方式启动
 ```
 
@@ -172,6 +172,34 @@ agc_weekly_report { appId, endDate: "2026-06-07", outPath: "D:/reports/agc-week.
 
 `agc_report_export` 的 `outPath` 默认不覆盖已存在文件，需要覆盖时显式传 `overwrite: true`。
 
+### 真实输出长什么样
+
+仓库里带了一份**可复现**的样例输出（`node scripts/generate-examples.mjs` 用本地 mock 上游重新生成，不需要凭据）：
+
+| 文件 | 内容 |
+|---|---|
+| [docs/examples/report-trend.json](docs/examples/report-trend.json) | 30 天报表：各指标周环比、趋势方向、峰值/谷值、异常日（发布日激增 z=46.55） |
+| [docs/examples/daily-report.md](docs/examples/daily-report.md) | 日报：7 日下载趋势 + 崩馈日均/最差日/版本分布 + 评分与差评关键词 |
+| [docs/examples/weekly-report.md](docs/examples/weekly-report.md) | 周报：下载量 ↑+6.4%、崩溃数 ↑+134.6%（自动对比上一周） |
+| [docs/examples/review-insights.json](docs/examples/review-insights.json) | 评论洞察：星级直方图、平均分、「闪退」等关键词簇带例句 |
+
+日报片段（节选自 `docs/examples/daily-report.md`）：
+
+```markdown
+## Download & install trend (harmony-download, 7 days to 20260530)
+
+- 下载量: 2332 over the last 7 days (daily average 333.1)
+- range 2026-05-24 → 2026-05-30 (7 day(s)); latest 310
+- direction down (-3.8%/day); peak 360 on 2026-05-25, trough 264 on 2026-05-29
+- trend: ███▇▆▁▄
+
+## Crash metrics (crash, 7 days to 20260530)
+
+- crash events: 448 over 7 day(s) (64.0/day)
+- worst day: 2026-05-27 with 146
+- top versions: 2.3.0 (406), 2.2.1 (42)
+```
+
 ---
 
 ## 安全与隐私
@@ -200,7 +228,7 @@ agc_weekly_report { appId, endDate: "2026-06-07", outPath: "D:/reports/agc-week.
 ## 开发
 
 ```bash
-node --test "test/**/*.test.js"    # 单元 + 协议 e2e + mock 全链路，53 项
+node --test "test/**/*.test.js"    # 单元 + 协议 e2e + mock 全链路，55 项
 node scripts/check-secrets.mjs      # 提交前密钥扫描
 node scripts/handshake-check.mjs    # 真机 stdio 握手自检（CI 同款）
 node scripts/live-smoke.mjs         # 真实凭据冒烟（需 AGC_* 环境变量，不属于 CI）
@@ -215,7 +243,7 @@ src/client.js         # HTTP 客户端：域名守卫、业务码、401 重试�
 src/auth.js           # client_credentials 令牌 + Service Account PS256 JWT
 src/tools/*.js        # 13 个工具
 src/analytics/*.js    # 趋势 / 文本聚类 / Crash 归一化 / 报告组装（纯函数）
-test/*.test.js        # 53 项测试
+test/*.test.js        # 55 项测试
 ```
 
 提交 PR 前请确保 `node --test`、`node scripts/check-secrets.mjs` 与 `node scripts/handshake-check.mjs` 均通过；CI 会在 Windows 与 Linux、Node 20 与 22 上跑同一套测试。

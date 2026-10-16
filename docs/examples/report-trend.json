@@ -1,0 +1,63 @@
+{
+  "overview": {
+    "dateColumn": "日期",
+    "daysCovered": 30,
+    "range": {
+      "first": "2026-05-01",
+      "last": "2026-05-30"
+    },
+    "metrics": [
+      {
+        "metric": "下载量",
+        "totalLast7": 2332,
+        "wowChange": 0.06435417617526244,
+        "direction": "down",
+        "sparkline": "▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁"
+      },
+      {
+        "metric": "安装量",
+        "totalLast7": 1911,
+        "wowChange": 0.06343906510851419,
+        "direction": "down",
+        "sparkline": "▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁"
+      },
+      {
+        "metric": "卸载量",
+        "totalLast7": 399,
+        "wowChange": 0.07547169811320754,
+        "direction": "up",
+        "sparkline": "▄▆█▁▂▄▆█▁▂▄▆█▁▂▄▆█▁▂▄▆█▁▂▄▆█"
+      }
+    ]
+  },
+  "trend": {
+    "metric": "下载量",
+    "dateColumn": "日期",
+    "firstDay": "2026-05-01",
+    "lastDay": "2026-05-30",
+    "daysCovered": 30,
+    "totalLast7": 2332,
+    "totalPrev7": 2191,
+    "wowChange": 0.06435417617526244,
+    "direction": "down",
+    "directionStrength": "-1.5%/day",
+    "lastValue": 310,
+    "peak": {
+      "day": "2026-05-13",
+      "value": 1740
+    },
+    "trough": {
+      "day": "2026-05-15",
+      "value": 220
+    },
+    "anomalyDays": [
+      {
+        "day": "2026-05-13",
+        "value": 1740,
+        "z": 46.55
+      }
+    ],
+    "sparkline": "▁▁▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁",
+    "dailyAverage": 366
+  }
+}

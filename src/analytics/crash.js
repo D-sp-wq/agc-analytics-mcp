@@ -12,6 +12,8 @@
  * @module src/analytics/crash.js
  */
 
+import { deepRows, pick, pickNumber } from '../deep.js'
+
 /**
  * Build the request body for a crash/app-freeze metric query.
  * @param {{appId: string, startMs: number, endMs: number, dimension?: string, version?: string}} p
@@ -34,32 +36,27 @@ export function crashRequestBody(p) {
  * @param {unknown} data
  */
 export function normalizeCrashRows(data) {
-  const root = /** @type {any} */ (data)
-  const payload = root?.value ?? root?.data ?? root?.result ?? root
-  const list = Array.isArray(payload) ? payload
-    : Array.isArray(payload?.list) ? payload.list
-      : Array.isArray(payload?.rows) ? payload.rows
-        : Array.isArray(payload?.metrics) ? payload.metrics
-          : undefined
-  if (list === undefined) {
+  const list = deepRows(data, { minItems: 1 })
+  if (list.length === 0) {
     return { rows: [], passthrough: data }
   }
   const rows = list
     .map(entry => {
-      const e = /** @type {any} */ (entry)
-      const count = Number(e.count ?? e.crashCount ?? e.times ?? e.cnt ?? 0)
-      const users = Number(e.users ?? e.userCount ?? e.affectedUsers ?? e.affected ?? 0)
-      const rate = Number(e.rate ?? e.crashRate ?? e.ratio ?? NaN)
+      const count = pickNumber(entry, ['count', 'crashCount', 'times', 'cnt', 'value', 'total'])
+      const users = pickNumber(entry, ['users', 'userCount', 'affectedUsers', 'affected'])
+      const rate = pickNumber(entry, ['rate', 'crashRate', 'ratio'])
+      const day = pick(entry, ['date', 'day', 'time', 'statDate'])
+      const version = pick(entry, ['version', 'appVersion', 'app_version'])
       return {
-        day: typeof e.date === 'string' ? e.date : typeof e.day === 'string' ? e.day : undefined,
-        version: typeof e.version === 'string' ? e.version : typeof e.appVersion === 'string' ? e.appVersion : undefined,
-        count,
-        users: Number.isFinite(users) ? users : undefined,
-        rate: Number.isFinite(rate) ? rate : undefined,
+        day: typeof day === 'string' ? day : undefined,
+        version: typeof version === 'string' ? version : undefined,
+        count: count ?? 0,
+        users,
+        rate,
       }
     })
     .filter(row => Number.isFinite(row.count))
-  return { rows }
+  return rows.length === 0 ? { rows: [], passthrough: data } : { rows }
 }
 
 /**

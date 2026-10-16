@@ -11,12 +11,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { validate, SITE_ARG } from '../schema.js'
-import { ymd, shiftYmd, isoDay } from '../dates.js'
+import { ymd, shiftYmd, isoDay, filterRowsInWindow } from '../dates.js'
 import { csvRows, decodeCsv } from '../csv.js'
 import { dailyDigest, weeklyDigest } from '../analytics/digest.js'
 import { trendFor, pickPrimaryMetric, trendLines, aggregateByDay } from '../analytics/trend.js'
 import { summarizeCrash } from '../analytics/crash.js'
 import { reviewInsights } from '../analytics/text.js'
+import { deepRows, pick } from '../deep.js'
 import { REPORTS, defaultWindow } from './reports.js'
 import { crashToolsQuery } from './crash-shared.js'
 
@@ -55,7 +56,11 @@ export function digestTools({ client }) {
     const fileUrl = res.data?.fileURL ?? res.data?.fileUrl
     if (typeof fileUrl !== 'string' || fileUrl === '') return []
     const file = await client.download(fileUrl)
-    return csvRows(decodeCsv(file.bytes)).rows
+    const rows = csvRows(decodeCsv(file.bytes)).rows
+    // Same window enforcement as agc_report_export: an export that ignores the
+    // requested range must not turn "this week" into "everything".
+    const dateColumn = aggregateByDay(rows).dateColumn
+    return filterRowsInWindow(rows, dateColumn, startDay, endDay).rows
   }
 
   /** Crash rows for a window via the shared query helper. */
@@ -93,13 +98,13 @@ export function digestTools({ client }) {
         site: args.site,
         preferred: ['api_client'],
       })
-      const rows = res.data?.reviews ?? res.data?.list ?? res.data?.value ?? []
-      if (!Array.isArray(rows) || rows.length === 0) break
+      const rows = deepRows(res.data, { minItems: 1 })
+      if (rows.length === 0) break
       for (const entry of rows) {
         list.push({
-          text: String(entry.content ?? entry.review ?? entry.text ?? ''),
-          rating: entry.rating ?? entry.stars,
-          version: entry.appVersion ?? entry.apkVersion ?? entry.version,
+          text: String(pick(entry, ['content', 'review', 'text', 'reviewContent']) ?? ''),
+          rating: pick(entry, ['rating', 'stars', 'star', 'score']),
+          version: pick(entry, ['appVersion', 'apkVersion', 'version']),
         })
       }
       if (rows.length < 100) break
@@ -165,10 +170,13 @@ export function digestTools({ client }) {
               promise: crashRows(args, crashKind, weekStart, day).then(normalized => {
                 if (normalized.rows.length !== 0) {
                   const summary = summarizeCrash(normalized.rows)
-                  const wow = summary.wowChange === undefined ? 'n/a' : `${(summary.wowChange * 100).toFixed(1)}%`
+                  // No previous-week fetch in a daily digest, so no WoW claim:
+                  // a comparison against zero would be misleading.
+                  const average = summary.total / Math.max(1, summary.daysCovered)
+                  const worst = summary.worstDays[0]
                   return [
-                    `- crash events: ${summary.total} over ${summary.daysCovered} day(s)`,
-                    `- last 7 days ${summary.last7Total} vs previous 7 days ${summary.prev7Total} (${wow})`,
+                    `- crash events: ${summary.total} over ${summary.daysCovered} day(s) (${average.toFixed(1)}/day)`,
+                    worst === undefined ? '- no per-day breakdown available' : `- worst day: ${worst.day} with ${worst.count}`,
                     summary.byVersion.length === 0
                       ? '- no version breakdown available'
                       : `- top versions: ${summary.byVersion.map(v => `${v.version} (${v.count})`).join(', ')}`,

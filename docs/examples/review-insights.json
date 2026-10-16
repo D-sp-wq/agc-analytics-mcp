@@ -1,0 +1,45 @@
+{
+  "analysed": 10,
+  "clustered": 10,
+  "negativeCount": 6,
+  "pool": "all",
+  "averageRating": 3.1,
+  "histogram": {
+    "1": 2,
+    "2": 2,
+    "3": 2,
+    "4": 1,
+    "5": 3
+  },
+  "topTerms": [
+    {
+      "term": "闪退",
+      "count": 3,
+      "examples": [
+        {
+          "rating": 1,
+          "version": "2.3.0",
+          "date": "2026-05-25 10:10:00",
+          "text": "更新后一直闪退，打开就闪退，根本用不了"
+        },
+        {
+          "rating": 1,
+          "version": "2.3.0",
+          "date": "2026-05-26 10:11:00",
+          "text": "闪退严重，登录都登录不了，麻烦尽快修复"
+        }
+      ]
+    }
+  ],
+  "negativeByVersion": [
+    {
+      "version": "2.3.0",
+      "count": 6
+    },
+    {
+      "version": "2.2.1",
+      "count": 4
+    }
+  ],
+  "negativeInPool": 6
+}

@@ -71,10 +71,12 @@ export function reviewInsights(reviews, opts = {}) {
     if (chosen.length >= topN) break
   }
 
-  // Star distribution.
+  // Star distribution and the negative count (independent of the pool mode).
   const histogram = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
   let rated = 0
   let sum = 0
+  let negativeCount = 0
+  const negativeCeiling = opts.minRating ?? 3
   for (const review of reviews) {
     const stars = Number(String(review.rating ?? '').replace(/[^0-9.]/g, ''))
     if (!Number.isFinite(stars) || stars <= 0) continue
@@ -82,9 +84,10 @@ export function reviewInsights(reviews, opts = {}) {
     histogram[bucket] += 1
     rated += 1
     sum += stars
+    if (stars <= negativeCeiling) negativeCount += 1
   }
 
-  // Version hotspots: negative reviews grouped by version.
+  // Version hotspots: reviews in the clustering pool grouped by version.
   const byVersion = new Map()
   for (const review of pool) {
     const version = String(review.version ?? '').trim()
@@ -93,11 +96,21 @@ export function reviewInsights(reviews, opts = {}) {
   }
 
   return {
+    /** Reviews read from the API. */
     analysed: reviews.length,
-    negativeAnalysed: pool.length,
+    /** Reviews that went into the keyword clustering (all, or negatives only). */
+    clustered: pool.length,
+    /** Reviews at or below the negative rating ceiling, always computed. */
+    negativeCount,
+    pool: opts.onlyNegative === true ? 'negative-only' : 'all',
     averageRating: rated !== 0 ? Number((sum / rated).toFixed(2)) : null,
     histogram,
     topTerms: chosen,
     negativeByVersion: [...byVersion.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([version, count]) => ({ version, count })),
+    /** Reviews in the pool that rated the app at or below the ceiling. */
+    negativeInPool: pool.filter(review => {
+      const stars = Number(String(review.rating ?? '').replace(/[^0-9.]/g, ''))
+      return Number.isFinite(stars) && stars > 0 && stars <= negativeCeiling
+    }).length,
   }
 }

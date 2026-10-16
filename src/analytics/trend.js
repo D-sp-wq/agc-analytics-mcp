@@ -169,9 +169,13 @@ export function trendFor(rows, metric, opts = {}) {
   const ma = movingAverage(series)
   const { direction, strength } = directionOf(series, ma)
   // Causal anomaly scan: each day is scored against the days before it only,
-  // so a spike is not diluted by the very value it should flag.
+  // so a spike is not diluted by the very value it should flag. Seven prior
+  // observations are required first — with less history the variance estimate
+  // is meaningless and ordinary wobble would be reported as an anomaly (a
+  // one-week window therefore reports none, which is the honest answer).
+  const MIN_ANOMALY_HISTORY = 7
   const anomalies = []
-  for (let i = 3; i < series.length; i++) {
+  for (let i = MIN_ANOMALY_HISTORY; i < series.length; i++) {
     const z = lastZScore(series.slice(0, i + 1))
     if (Math.abs(z) >= 2.5) anomalies.push({ day: days[i], value: series[i], z })
   }

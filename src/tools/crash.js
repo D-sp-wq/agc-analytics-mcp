@@ -5,13 +5,8 @@
  */
 
 import { validate, SITE_ARG } from '../schema.js'
-import { toMillis, ymd } from '../dates.js'
-import { crashRequestBody, normalizeCrashRows, summarizeCrash } from '../analytics/crash.js'
-
-const KIND_PATH = Object.freeze({
-  crash: '/api/apm/api/v1/hap/query/crash/metric',
-  'app-freeze': '/api/apm/api/v1/hap/query/app-freeze/metric',
-})
+import { summarizeCrash } from '../analytics/crash.js'
+import { crashToolsQuery } from './crash-shared.js'
 
 /**
  * @param {{client: import('../client.js').AgcClient}} deps
@@ -25,18 +20,10 @@ export function crashTools({ client }) {
     return { ...args, startDate: args.startDate ?? startDay, endDate: args.endDate ?? endDay }
   }
 
+  /** One query path for both the crash tools and the digests. */
   async function query(kind, rawArgs) {
-    const path = KIND_PATH[kind]
     const args = withWindow(rawArgs)
-    const body = crashRequestBody({
-      appId: args.appId,
-      startMs: toMillis(ymd(args.startDate)),
-      endMs: toMillis(ymd(args.endDate), { endOfDay: true }),
-      dimension: args.dimension,
-      version: args.version,
-    })
-    const res = await client.call('POST', path, { body, site: args.site })
-    return { res, normalized: normalizeCrashRows(res.data) }
+    return crashToolsQuery(client, { ...args, kind })
   }
 
   const commonArgs = {

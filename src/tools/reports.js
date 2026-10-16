@@ -8,9 +8,9 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { validate, SITE_ARG } from '../schema.js'
-import { reportRange, ymd, shiftYmd, isoDay } from '../dates.js'
+import { reportRange, shiftYmd, isoDay, filterRowsInWindow } from '../dates.js'
 import { decodeCsv, csvRows } from '../csv.js'
-import { trendFor, trendOverview, dayOf } from '../analytics/trend.js'
+import { trendFor, trendOverview, aggregateByDay } from '../analytics/trend.js'
 
 /** Report catalogue: key → platform + upstream path. */
 export const REPORTS = Object.freeze({
@@ -68,7 +68,19 @@ export function reportTools({ client }) {
     const file = await client.download(fileUrl)
     const text = decodeCsv(file.bytes)
     const parsed = csvRows(text)
-    return { window: { start, end }, header: parsed.header, rows: parsed.rows, csvText: text }
+    // AGC normally honours the requested window. When an export ignores it (or
+    // is grouped by something other than the date), keeping the extra rows
+    // would make every downstream number wrong — so the window is enforced
+    // here, and what was dropped is reported.
+    const aggregated = aggregateByDay(parsed.rows)
+    const filtered = filterRowsInWindow(parsed.rows, aggregated.dateColumn, start, end)
+    return {
+      window: { start, end },
+      header: parsed.header,
+      rows: filtered.rows,
+      rowsDroppedOutsideWindow: filtered.dropped,
+      csvText: text,
+    }
   }
 
   return [
@@ -129,6 +141,7 @@ export function reportTools({ client }) {
           rowCount: parsed.rows.length,
           rows: parsed.rows.slice(0, limit),
           truncated: parsed.rows.length > limit,
+          rowsDroppedOutsideWindow: parsed.rowsDroppedOutsideWindow ?? 0,
           savedTo: args.outPath !== undefined && args.outPath !== '' ? path.resolve(String(args.outPath)) : undefined,
         }
       },
@@ -172,4 +185,4 @@ export function reportTools({ client }) {
 }
 
 /** Re-exported for digest tools. */
-export { defaultWindow, dayOf, ymd }
+export { defaultWindow }

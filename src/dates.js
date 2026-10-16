@@ -79,3 +79,41 @@ export function shiftYmd(ymdStr, n) {
   const d = new Date(t)
   return `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}${String(d.getUTCDate()).padStart(2, '0')}`
 }
+
+/**
+ * Is `day` (any date-ish string) inside [from, to] (both YYYYMMDD)?
+ *
+ * AGC normally honours the requested window, but an export that ignores it —
+ * or one grouped by a non-date dimension — would otherwise be counted as if it
+ * belonged to the window. Rows without a parseable date return `null` so the
+ * caller can decide to keep them.
+ *
+ * @param {string} day
+ * @param {string} from YYYYMMDD
+ * @param {string} to YYYYMMDD
+ * @returns {boolean|null}
+ */
+export function inWindow(day, from, to) {
+  const m = /(\d{4})[-/]?(\d{2})[-/]?(\d{2})/.exec(String(day ?? ''))
+  if (m === null) return null
+  const compact = `${m[1]}${m[2]}${m[3]}`
+  return compact >= from && compact <= to
+}
+
+/**
+ * Keep the rows that belong to the window. Rows with no date column value are
+ * kept: they cannot be judged, and dropping them would silently lose data in
+ * country/version-grouped exports.
+ *
+ * @template {Record<string, string>} T
+ * @param {T[]} rows
+ * @param {string} dateColumn
+ * @param {string} from YYYYMMDD
+ * @param {string} to YYYYMMDD
+ * @returns {{rows: T[], dropped: number}}
+ */
+export function filterRowsInWindow(rows, dateColumn, from, to) {
+  if (dateColumn === '') return { rows, dropped: 0 }
+  const kept = rows.filter(row => inWindow(row[dateColumn], from, to) !== false)
+  return { rows: kept, dropped: rows.length - kept.length }
+}

@@ -97,7 +97,7 @@ Keep credential files outside the repository; `.gitignore` already ignores `.env
 ```bash
 git clone https://github.com/YOUR_GITHUB_USERNAME/agc-analytics-mcp.git
 cd agc-analytics-mcp
-node --test "test/**/*.test.js"   # 53 tests, no network and no credentials needed
+node --test "test/**/*.test.js"   # 55 tests, no network and no credentials needed
 node index.js                     # start as a stdio server
 ```
 
@@ -129,6 +129,8 @@ validated locally with an actionable message before any request is made.
 ---
 
 ## Examples
+
+Committed sample output lives in docs/examples/ (regenerate with `node scripts/generate-examples.mjs`, no credentials needed): a 30-day report trend with anomaly detection, a daily digest, a weekly digest with real WoW comparisons, and review keyword insights.
 
 ```text
 agc_auth_status
@@ -174,7 +176,7 @@ See [SECURITY.md](SECURITY.md) for the full threat model.
 ## Development
 
 ```bash
-node --test "test/**/*.test.js"    # 53 tests: unit, protocol e2e and mock full-chain
+node --test "test/**/*.test.js"    # 55 tests: unit, protocol e2e and mock full-chain
 node scripts/check-secrets.mjs      # pre-commit secret scan
 node scripts/live-smoke.mjs         # real-credential smoke test (needs AGC_* env vars; not in CI)
 ```

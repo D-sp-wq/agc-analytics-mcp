@@ -11,6 +11,7 @@
 import { validate, SITE_ARG } from '../schema.js'
 import { toMillis, REVIEWS_MAX_RANGE_DAYS } from '../dates.js'
 import { reviewInsights } from '../analytics/text.js'
+import { deepRows, pick } from '../deep.js'
 
 function reviewArgs(extra = {}) {
   return {
@@ -157,20 +158,19 @@ export function reviewTools({ client }) {
             site: args.site,
             preferred: ['api_client'],
           })
-          const list = res.data?.reviews ?? res.data?.list ?? res.data?.value ?? []
-          if (!Array.isArray(list) || list.length === 0) break
+          const list = deepRows(res.data, { minItems: 1 })
+          if (list.length === 0) break
           for (const entry of list) {
-            const e = /** @type {any} */ (entry)
             reviews.push({
-              text: String(e.content ?? e.review ?? e.text ?? ''),
-              rating: e.rating ?? e.stars ?? e.star,
-              version: e.appVersion ?? e.apkVersion ?? e.version,
-              date: e.reviewTime ?? e.createTime ?? e.date,
+              text: String(pick(entry, ['content', 'review', 'text', 'reviewContent']) ?? ''),
+              rating: pick(entry, ['rating', 'stars', 'star', 'score']),
+              version: pick(entry, ['appVersion', 'apkVersion', 'version']),
+              date: pick(entry, ['reviewTime', 'createTime', 'date', 'time']),
             })
           }
           if (list.length < 100) break
         }
-        if (reviews.length === 0) return { note: 'no reviews found in this window', raw: reviews }
+        if (reviews.length === 0) return { note: 'no reviews found in this window (or the response envelope was not recognised)', raw: null }
         return reviewInsights(reviews, { onlyNegative: args.onlyNegative, minRating: args.minRating, topN: args.topN })
       },
     },
