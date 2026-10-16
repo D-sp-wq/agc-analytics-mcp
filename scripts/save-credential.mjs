@@ -3,6 +3,8 @@
  * Write an AGC credential file without ever echoing the secret.
  *
  *   node scripts/save-credential.mjs                     # interactive (secret hidden)
+ *   node scripts/save-credential.mjs --from-text paste.txt   # paste straight from the console
+ *   Get-Clipboard | node scripts/save-credential.mjs --from-text -
  *   node scripts/save-credential.mjs --sa ~/Downloads/xxx-private.json
  *   AGC_CLIENT_ID=… AGC_CLIENT_SECRET=… node scripts/save-credential.mjs   # non-interactive
  *   node scripts/save-credential.mjs --check             # show what is configured, no writes
@@ -10,19 +12,24 @@
  * Why this exists: the AGC console shows the client secret once, and the usual
  * ways of getting it onto disk (paste into a shell command, paste into a chat,
  * echo into a file) all leak it into a history or a transcript. Here it is read
- * from a hidden prompt and written straight to a 0600 file.
+ * from a hidden prompt — or, with --from-text, straight from whatever the
+ * console gave you — and written to a 0600 file. No hand-written JSON.
  *
  * Options:
- *   --out <path>        where to write (default ~/.agc/api-client.json)
- *   --sa <path>         validate and relocate a downloaded Service Account JSON
- *   --force             overwrite an existing file
- *   --check             report the current configuration and exit (no writes)
+ *   --from-text <file|->  recognise and store whatever was pasted
+ *   --detect <file|->     recognise and report only (writes nothing)
+ *   --out <path|dir>      where to write (default ~/.agc)
+ *   --sa <path>           validate and relocate a downloaded Service Account JSON
+ *   --force               overwrite an existing file
+ *   --check               report the current configuration and exit (no writes)
+ *   --json                machine-readable result (used by the paste window)
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync, chmodSync, copyFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import readline from 'node:readline'
+import { detectCredential, documentFor, targetFileFor } from '../src/credential-detect.js'
 
 const argv = process.argv.slice(2)
 const flag = name => argv.includes(name)
@@ -127,6 +134,84 @@ function writeSecure(path, contents) {
   try {
     chmodSync(path, 0o600) // no-op on Windows, meaningful on POSIX
   } catch { /* best effort */ }
+}
+
+// ── paste handling: no hand-written JSON ─────────────────────────────────────
+
+const textSource = valueOf('--from-text') ?? (flag('--detect') ? valueOf('--detect') : undefined)
+
+if (textSource !== undefined) {
+  const emit = (payload, code) => {
+    if (flag('--json')) console.log(JSON.stringify(payload, null, 2))
+    else if (payload.message !== undefined) console.log(payload.message)
+    else if (payload.problems !== undefined) console.log(payload.problems.join('\n'))
+    process.exit(code)
+  }
+
+  let text
+  try {
+    text = textSource === '-' ? readFileSync(0, 'utf8') : readFileSync(resolve(expandHome(textSource)), 'utf8')
+  } catch (error) {
+    emit({ ok: false, problems: [`读取失败：${error.message}`] }, 2)
+  }
+
+  const detected = detectCredential(text)
+  if (detected.kind === null) {
+    emit({
+      ok: false,
+      kind: null,
+      notes: detected.notes,
+      problems: detected.problems,
+      message: [
+        '认不出这段内容：',
+        ...detected.problems.map(problem => `  · ${problem}`),
+        '',
+        '下面任意一种，整段粘进来就行：',
+        '  · 控制台给出的 JSON（含 client_id / client_secret）',
+        '  · 两行：client_id: … 与 client_secret: …',
+        '  · Service Account 的 *private.json 全文',
+      ].join('\n'),
+    }, 2)
+  }
+
+  const targetDir = valueOf('--out') !== undefined ? resolve(expandHome(valueOf('--out'))) : join(homedir(), '.agc')
+  const target = join(targetDir, targetFileFor(detected.kind))
+  const document = documentFor(detected)
+  const label = detected.kind === 'api-client' ? 'API 客户端凭据' : 'Service Account 私钥文件'
+
+  if (flag('--detect')) {
+    emit({
+      ok: true,
+      kind: detected.kind,
+      target,
+      notes: detected.notes,
+      message: `识别成功：${label}\n将保存到：${target}`,
+    }, 0)
+  }
+
+  if (existsSync(target) && !flag('--force')) {
+    emit({ ok: false, target, problems: [`${target} 已存在`], message: `! ${target} 已存在，未覆盖（要覆盖请加 --force）` }, 2)
+  }
+
+  mkdirSync(dirname(target), { recursive: true, mode: 0o700 })
+  writeFileSync(target, `${JSON.stringify(document, null, 2)}\n`, { mode: 0o600 })
+  try { chmodSync(target, 0o600) } catch { /* no-op on Windows */ }
+
+  const envName = detected.kind === 'api-client' ? 'AGC_CLIENT_FILE' : 'AGC_SERVICE_ACCOUNT_FILE'
+  emit({
+    ok: true,
+    kind: detected.kind,
+    target,
+    env: { [envName]: target },
+    notes: detected.notes,
+    message: [
+      `✔ 已保存：${target}`,
+      `  识别为：${label}${detected.notes.length !== 0 ? ` — ${detected.notes.join('；')}` : ''}`,
+      '',
+      '下一步（不联网，只检查文件与字段）：',
+      `  ${envName}="${target}" node scripts/live-smoke.mjs --check-only`,
+    ].join('\n'),
+  }, 0)
 }
 
 // ── --check ──────────────────────────────────────────────────────────────────
