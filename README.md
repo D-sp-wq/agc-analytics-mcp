@@ -66,6 +66,8 @@ node scripts/setup.mjs --print-config-only    # 只看配置，不写任何文�
 
 ### 1. 拿到 AGC 凭据
 
+> **找不到「API 密钥」入口？** 大概率是打开成了 HarmonyOS 开发者中心（hdc-console）—— Connect API 凭据只在 **AppGallery Connect**（service/josp/agc/index.html）里。对照表与逐条排查见 [docs/WHERE-IS-API-KEY.md](docs/WHERE-IS-API-KEY.md)。
+>
 > 没有凭据、或不确定该建哪一种？照着 [docs/GETTING-CREDENTIALS.md](docs/GETTING-CREDENTIALS.md) 做一遍即可（含控制台路径、两个 JSON 文件长什么样、权限与常见错误对照表）。
 
 打开 [AppGallery Connect](https://developer.huawei.com/consumer/cn/service/josp/agc/index.html) →「用户与访问 → API 密钥 → Connect API」，创建凭据。两种凭据可以同时配置：

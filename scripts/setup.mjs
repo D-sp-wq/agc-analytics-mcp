@@ -163,8 +163,18 @@ if (!flag('--print-config-only')) {
     const choice = choiceRaw === '' ? '1' : choiceRaw
 
     if (choice === '1' || choice === '3') {
-      say('\n在 AGC 控制台打开：用户与访问 → API 密钥 → Connect API → API 客户端 → 创建')
-      say('（“项目”请选 N/A，否则部分接口会没权限）')
+      say('')
+      say('┌─ 在哪个页面创建？───────────────────────────────────────────')
+      say('│ 请打开 AppGallery Connect（AGC）控制台，不是 HarmonyOS 开发者中心：')
+      say('│   https://developer.huawei.com/consumer/cn/service/josp/agc/index.html')
+      say('│ 路径：左侧「用户与访问 → API 密钥 → Connect API → API 客户端 → 创建」')
+      say('│ 注意：「项目」选 N/A（否则部分接口会没权限）')
+      say('│')
+      say('│ 找不到「API 密钥」入口？多半是打开成了 HarmonyOS 开发者中心')
+      say('│ （网址含 hdc-console，左侧「用户与访问」下只有开发者信息/团队账号/')
+      say('│  关联主体/沙盒测试账号等，没有 API 密钥）。对照排查：')
+      say('│   docs/WHERE-IS-API-KEY.md')
+      say('└─────────────────────────────────────────────────────────────')
       const [id, secret] = await ask([
         { label: 'client_id: ' },
         { label: 'client_secret（输入时不显示）: ', hidden: true },

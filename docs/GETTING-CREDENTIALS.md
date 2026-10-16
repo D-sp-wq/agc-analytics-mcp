@@ -26,6 +26,10 @@
 
 ## 1. 创建 API 客户端（推荐先做这个）
 
+> **⚠️ 先确认你在哪个控制台** —— 这是失败率最高的一步。
+> **HarmonyOS 开发者中心**（地址含 `hdc-console`）里**没有** API 密钥入口；Connect API 凭据只在 **AppGallery Connect**（地址含 `service/josp/agc/index.html`）里。
+> 找不到入口请看 → [WHERE-IS-API-KEY.md](WHERE-IS-API-KEY.md)（含两个控制台的对照表和逐条排查）。
+
 1. 打开 [AppGallery Connect](https://developer.huawei.com/consumer/cn/service/josp/agc/index.html)，用你的开发者账号登录。
 2. 进入 **用户与访问 → API 密钥 → Connect API**。
 3. 切到 **API 客户端** 页签 → **创建**。

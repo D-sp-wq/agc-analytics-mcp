@@ -39,7 +39,8 @@
     "README_EN.md",
     "LICENSE",
     "SECURITY.md",
-    "docs/GETTING-CREDENTIALS.md"
+    "docs/GETTING-CREDENTIALS.md",
+    "docs/WHERE-IS-API-KEY.md"
   ],
   "repository": {
     "type": "git",
