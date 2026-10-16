@@ -1,0 +1,8 @@
+# Normalize line endings: the package is cross-platform and the shell script
+# must keep LF when cloned on Linux/macOS.
+* text=auto eol=lf
+
+*.ps1 text eol=crlf
+*.sh text eol=lf
+*.png binary
+*.tgz binary
