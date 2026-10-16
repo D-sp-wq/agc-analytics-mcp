@@ -1,0 +1,43 @@
+{
+  "name": "agc-analytics-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for Huawei AppGallery Connect analytics — report trends, crash metrics, review insights and daily/weekly digests for any MCP client. Zero dependencies, zero build step.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "huawei",
+    "appgallery",
+    "appgallery-connect",
+    "agc",
+    "harmonyos",
+    "analytics",
+    "reports",
+    "crash",
+    "reviews"
+  ],
+  "author": "daode",
+  "license": "MIT",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "agc-analytics-mcp": "index.js"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test \"test/**/*.test.js\"",
+    "check:secrets": "node scripts/check-secrets.mjs",
+    "smoke": "node scripts/live-smoke.mjs",
+    "publish:github": "node -e \"console.log('Run: pwsh -File scripts/publish-github.ps1 <your-github-user>  (or ./scripts/publish-github.sh <your-github-user>)')\""
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "files": [
+    "index.js",
+    "src",
+    "README.md",
+    "README_EN.md",
+    "LICENSE",
+    "SECURITY.md"
+  ]
+}

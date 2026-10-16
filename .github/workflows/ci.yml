@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: node ${{ matrix.node }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['20', '22']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      # No `npm install`: the package has zero dependencies and no build step.
+      - name: Run tests
+        run: node --test "test/**/*.test.js"
+
+      - name: Scan for committed secrets
+        run: node scripts/check-secrets.mjs
+
+      - name: Verify the server starts and answers a handshake
+        shell: bash
+        run: |
+          printf '%s\n' \
+            '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' \
+            '{"jsonrpc":"2.0","id":2,"method":"tools/list"}' \
+            | node index.js 2>/dev/null > handshake.jsonl
+          node -e "const l=require('fs').readFileSync('handshake.jsonl','utf8').trim().split('\n').map(JSON.parse);const t=l.find(m=>m.id===2);if(!t||t.result.tools.length!==13){console.error('handshake failed');process.exit(1)};console.log('handshake ok:',t.result.tools.length,'tools')"
