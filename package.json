@@ -15,7 +15,7 @@
     "crash",
     "reviews"
   ],
-  "author": "daode",
+  "author": "D-sp-wq",
   "license": "MIT",
   "type": "module",
   "main": "index.js",
@@ -39,5 +39,13 @@
     "README_EN.md",
     "LICENSE",
     "SECURITY.md"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/D-sp-wq/agc-analytics-mcp.git"
+  },
+  "homepage": "https://github.com/D-sp-wq/agc-analytics-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/D-sp-wq/agc-analytics-mcp/issues"
+  }
 }

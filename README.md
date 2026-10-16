@@ -73,7 +73,7 @@
   "mcpServers": {
     "agc": {
       "command": "npx",
-      "args": ["-y", "github:YOUR_GITHUB_USERNAME/agc-analytics-mcp"],
+      "args": ["-y", "github:D-sp-wq/agc-analytics-mcp"],
       "env": {
         "AGC_CLIENT_FILE": "/absolute/path/to/api-client.json",
         "AGC_SERVICE_ACCOUNT_FILE": "/absolute/path/to/service-account.json",
@@ -88,7 +88,7 @@
 
 | 客户端 | 位置 |
 |---|---|
-| Claude Code | `claude mcp add agc -s user -e AGC_CLIENT_FILE=... -- npx -y github:YOUR_GITHUB_USERNAME/agc-analytics-mcp` |
+| Claude Code | `claude mcp add agc -s user -e AGC_CLIENT_FILE=... -- npx -y github:D-sp-wq/agc-analytics-mcp` |
 | Claude Desktop | Windows `%APPDATA%\Claude\claude_desktop_config.json`；macOS `~/Library/Application Support/Claude/claude_desktop_config.json` |
 | Cursor | 全局 `~/.cursor/mcp.json` 或项目内 `.cursor/mcp.json` |
 | VS Code (Copilot Agent) | `.vscode/mcp.json`，键名为 `servers`，需加 `"type": "stdio"` |
@@ -96,12 +96,12 @@
 | Gemini CLI | `~/.gemini/settings.json` |
 | Trae / DevEco Studio / Cherry Studio | 各自的 MCP 设置面板粘贴上面的 JSON |
 
-> **Windows 提示**：少数客户端无法直接启动 `npx`，把 `"command"` 改成 `"cmd"`，`"args"` 改成 `["/c","npx","-y","github:YOUR_GITHUB_USERNAME/agc-analytics-mcp"]`。
+> **Windows 提示**：少数客户端无法直接启动 `npx`，把 `"command"` 改成 `"cmd"`，`"args"` 改成 `["/c","npx","-y","github:D-sp-wq/agc-analytics-mcp"]`。
 
 ### 3. 从源码运行（可选）
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/agc-analytics-mcp.git
+git clone https://github.com/D-sp-wq/agc-analytics-mcp.git
 cd agc-analytics-mcp
 node --test "test/**/*.test.js"   # 55 项测试，无需网络与凭据
 node index.js                     # 直接以 stdio 方式启动

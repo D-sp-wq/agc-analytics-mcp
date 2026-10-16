@@ -68,7 +68,7 @@ Keep credential files outside the repository; `.gitignore` already ignores `.env
   "mcpServers": {
     "agc": {
       "command": "npx",
-      "args": ["-y", "github:YOUR_GITHUB_USERNAME/agc-analytics-mcp"],
+      "args": ["-y", "github:D-sp-wq/agc-analytics-mcp"],
       "env": {
         "AGC_CLIENT_FILE": "/absolute/path/to/api-client.json",
         "AGC_SERVICE_ACCOUNT_FILE": "/absolute/path/to/service-account.json",
@@ -81,7 +81,7 @@ Keep credential files outside the repository; `.gitignore` already ignores `.env
 
 | Client | Where |
 |---|---|
-| Claude Code | `claude mcp add agc -s user -e AGC_CLIENT_FILE=... -- npx -y github:YOUR_GITHUB_USERNAME/agc-analytics-mcp` |
+| Claude Code | `claude mcp add agc -s user -e AGC_CLIENT_FILE=... -- npx -y github:D-sp-wq/agc-analytics-mcp` |
 | Claude Desktop | Windows `%APPDATA%\Claude\claude_desktop_config.json`; macOS `~/Library/Application Support/Claude/claude_desktop_config.json` |
 | Cursor | `~/.cursor/mcp.json` or `.cursor/mcp.json` |
 | VS Code (Copilot Agent) | `.vscode/mcp.json`, key `servers`, add `"type": "stdio"` |
@@ -90,12 +90,12 @@ Keep credential files outside the repository; `.gitignore` already ignores `.env
 | Trae / DevEco Studio / Cherry Studio | Paste the JSON above into their MCP settings |
 
 > **Windows**: a few clients cannot spawn `npx` directly — use `"command": "cmd"` with
-> `"args": ["/c","npx","-y","github:YOUR_GITHUB_USERNAME/agc-analytics-mcp"]`.
+> `"args": ["/c","npx","-y","github:D-sp-wq/agc-analytics-mcp"]`.
 
 ### 3. From source (optional)
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/agc-analytics-mcp.git
+git clone https://github.com/D-sp-wq/agc-analytics-mcp.git
 cd agc-analytics-mcp
 node --test "test/**/*.test.js"   # 55 tests, no network and no credentials needed
 node index.js                     # start as a stdio server
