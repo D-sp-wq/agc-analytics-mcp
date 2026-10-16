@@ -54,7 +54,7 @@
 
 | 凭据 | 创建方式 | 环境变量 | 适用 |
 |---|---|---|---|
-| **API 客户端** | 「API 密钥」页签 → 创建 API 客户端（**项目选 N/A**） | `AGC_CLIENT_FILE`（含 `client_id`/`client_secret` 的 JSON 路径）或 `AGC_CLIENT_ID` + `AGC_CLIENT_SECRET` | 全部工具，**评论/评分接口必须用它** |
+| **API 客户端** | 「API 密钥」页签 → 创建 API 客户端（**项目选 N/A**），然后 `node scripts/save-credential.mjs` 录入（密钥不回显） | `AGC_CLIENT_FILE`（含 `client_id`/`client_secret` 的 JSON 路径）或 `AGC_CLIENT_ID` + `AGC_CLIENT_SECRET` | 全部工具，**评论/评分接口必须用它** |
 | **Service Account** | 「Service Account」页签 → 创建，类型选**开发者级**，会下载 `*private.json` | `AGC_SERVICE_ACCOUNT_FILE`（该 JSON 的路径） | 除评论/评分外的全部工具 |
 
 站点用 `AGC_SITE` 选择：`cn`（默认）/ `de` / `sg` / `ru`。

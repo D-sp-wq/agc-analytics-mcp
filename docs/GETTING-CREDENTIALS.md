@@ -31,7 +31,23 @@
    - 名称随意，例如 `agc-analytics-mcp`。
 4. 创建后会给出 **client_id** 与 **client_secret**（部分界面只显示一次，请立刻保存）。
 
-把它整理成一个 JSON 文件（字段名就用下面这两个，插件原生识别；也兼容 `clientId`/`clientSecret`）：
+**推荐：用脚本录入，密钥不回显、不进 shell 历史、也不进任何聊天记录**
+
+```bash
+node scripts/save-credential.mjs
+# client_id: （粘贴后回车）
+# client_secret (hidden): （粘贴时不显示任何字符）
+# → ✔ saved to ~/.agc/api-client.json  client_id=…abcd  client_secret=…wxyz
+```
+
+它会把文件写到 `~/.agc/api-client.json` 并把权限收紧到 0600（POSIX），默认拒绝覆盖已存在的文件（需要覆盖时加 `--force`）。也可以用环境变量非交互录入：
+
+```bash
+AGC_CLIENT_ID=… AGC_CLIENT_SECRET=… node scripts/save-credential.mjs --out ~/.agc/api-client.json
+node scripts/save-credential.mjs --check        # 只检查现有配置，不写文件
+```
+
+如果你更愿意手工创建，JSON 长这样（字段名原生识别，也兼容 `clientId`/`clientSecret`）：
 
 ```json
 {
@@ -59,7 +75,8 @@
 }
 ```
 
-把它保存为例如 `~/.agc/service-account.json`。**不要**把它填给 `AGC_CLIENT_FILE`（插件会检测并明确提示填反了）。
+用脚本收拢（同时校验字段是否齐全）：
+ode scripts/save-credential.mjs --sa ~/Downloads/xxx-private.json；或手工保存为 ~/.agc/service-account.json。**不要**把它填给 `AGC_CLIENT_FILE`（插件会检测并明确提示填反了）。
 
 ---
 
